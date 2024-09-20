@@ -3,8 +3,8 @@ import { AudioRecorder } from '~/components/audio-recorder'
 
 export const meta: MetaFunction = () => {
   return [
-    { title: 'New Remix App' },
-    { name: 'description', content: 'Welcome to Remix!' },
+    { title: 'Voice mail' },
+    { name: 'description', content: 'record your voice here and save it for later' },
   ]
 }
 
