@@ -1,15 +1,14 @@
 import React, { useState, useRef } from 'react'
-import * as option from 'fp-ts/Option'
-import { pipe } from 'fp-ts/function'
-import { isSome, none, some } from 'fp-ts/Option'
+import { pipe } from 'fp-ts/lib/function'
+import { isSome, none, some, match as opMatch, Option } from 'fp-ts/lib/Option'
 import { Button } from './ui/button'
 
 export const AudioRecorder: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false)
-  const [audioURL, setAudioURL] = useState<option.Option<string>>(none)
+  const [audioURL, setAudioURL] = useState<Option<string>>(none)
   const [mediaRecorder, setMediaRecorder] =
-    useState<option.Option<MediaRecorder>>(none)
-  const [_error, setError] = useState<option.Option<string>>(none)
+    useState<Option<MediaRecorder>>(none)
+  const [_error, setError] = useState<Option<string>>(none)
   const audioChunksRef = useRef<Blob[]>([])
 
   const handleDataAvailable = (event: BlobEvent) => {
@@ -45,7 +44,7 @@ export const AudioRecorder: React.FC = () => {
   const stopRecording = () => {
     pipe(
       mediaRecorder,
-      option.match(
+      opMatch(
         () => { },
         (mr) => {
           mr.stop()
