@@ -7,6 +7,7 @@ import {
 } from '@remix-run/react'
 import type { LinksFunction } from '@remix-run/node'
 import { SpeedInsights } from '@vercel/speed-insights/remix'
+import { Analytics } from '@vercel/analytics/react';
 
 import './tailwind.css'
 
@@ -46,6 +47,7 @@ export default function App() {
     <>
       <Outlet />
       <SpeedInsights />
+      <Analytics />
     </>
   )
 }
