@@ -1,6 +1,6 @@
 PROTOBUF_FOLDER = ../grpc-proto
 PROTOBUF_FILE_PATH = $(PROTOBUF_FOLDER)/stt.proto
-PROTOBUF_OUTPUT = ./src/rpc/protobuf/
+PROTOBUF_OUTPUT = ./generated/protobuf/
 
 COLOR_LIGHT_GREEN=\e[1;32m
 COLOR_LIGHT_BLUE=\e[1;34m
