@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tstt.proto\x12\x03stt\"[\n\tSTTResult\x12\x12\n\ntranscript\x18\x01 \x01(\t\x12\x12\n\nconfidence\x18\x02 \x01(\x02\x12\x10\n\x08language\x18\x03 \x01(\t\x12\x14\n\x0c\x61udio_source\x18\x04 \x01(\t\"1\n\x10\x41udioFileRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x11\n\tfile_path\x18\x02 \x01(\t\".\n\x0bSTTResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t2|\n\nSTTService\x12\x31\n\rSendSTTResult\x12\x0e.stt.STTResult\x1a\x10.stt.STTResponse\x12;\n\x10ProcessAudioFile\x12\x15.stt.AudioFileRequest\x1a\x10.stt.STTResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\tstt.proto\x12\x03stt\"B\n\tSTTResult\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x12\n\ntranscript\x18\x02 \x01(\t\x12\x10\n\x08language\x18\x03 \x01(\t\"6\n\x10\x41udioFileRequest\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x11\n\tfile_path\x18\x02 \x01(\t\".\n\x0bSTTResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t2|\n\nSTTService\x12\x31\n\rSendSTTResult\x12\x0e.stt.STTResult\x1a\x10.stt.STTResponse\x12;\n\x10ProcessAudioFile\x12\x15.stt.AudioFileRequest\x1a\x10.stt.STTResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,11 +32,11 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'stt_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_STTRESULT']._serialized_start=18
-  _globals['_STTRESULT']._serialized_end=109
-  _globals['_AUDIOFILEREQUEST']._serialized_start=111
-  _globals['_AUDIOFILEREQUEST']._serialized_end=160
-  _globals['_STTRESPONSE']._serialized_start=162
-  _globals['_STTRESPONSE']._serialized_end=208
-  _globals['_STTSERVICE']._serialized_start=210
-  _globals['_STTSERVICE']._serialized_end=334
+  _globals['_STTRESULT']._serialized_end=84
+  _globals['_AUDIOFILEREQUEST']._serialized_start=86
+  _globals['_AUDIOFILEREQUEST']._serialized_end=140
+  _globals['_STTRESPONSE']._serialized_start=142
+  _globals['_STTRESPONSE']._serialized_end=188
+  _globals['_STTSERVICE']._serialized_start=190
+  _globals['_STTSERVICE']._serialized_end=314
 # @@protoc_insertion_point(module_scope)

@@ -9,14 +9,13 @@ service STTService {
 }
 
 message STTResult {
-  string transcript = 1;
-  float confidence = 2;
+  string user_id = 1;
+  string transcript = 2;
   string language = 3;
-  string audio_source = 4;
 }
 
 message AudioFileRequest {
-  string id = 1;
+  string user_id = 1;
   string file_path = 2;
 }
 

@@ -9,7 +9,5 @@ class SttRequest():
 class SttResult():
     audio_id: str
     transcript: str
-    confidence: float
     language: str
-    audio_source: str
 
