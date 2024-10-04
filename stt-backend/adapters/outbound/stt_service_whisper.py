@@ -1,5 +1,5 @@
 from core.model.stt import SttResult
-from core.ports.request_service import RequestService
+from core.ports.request_service import IRequestService
 from core.ports.stt_service import SttService
 
 import torch
@@ -9,7 +9,7 @@ from datasets import load_dataset
 from tqdm import tqdm
 
 class WhisperSttService(SttService):
-    def __init__(self, request_service: RequestService) -> None:
+    def __init__(self, request_service: IRequestService) -> None:
         self._request_service = request_service
         self._model = self._load_model()
 
@@ -55,4 +55,4 @@ class WhisperSttService(SttService):
                 result = self._model('audio.mp3', generate_kwargs={"language": "portuguese"})
         __import__('pprint').pprint(result)
 
-        return SttResult('','',0,'','')
+        return SttResult('', '', '')

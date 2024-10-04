@@ -1,8 +1,9 @@
-from core.ports.request_service import RequestService
+from core.ports.request_service import IRequestService
 
 
-class AudioService:
-    def __init__(self, request_service: RequestService):
+class IAudioService:
+    request_service: IRequestService
+    def __init__(self, request_service: IRequestService):
         raise NotImplementedError()
 
     def get(self, url: str) -> bytes:
