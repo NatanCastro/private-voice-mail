@@ -1,8 +1,16 @@
+import os
 from adapters.outbound.stt_service_whisper import WhisperSttService
-from adapters.outbound.request_service import RequestsService
+from core.services.request_service import RequestService
 
-r_service = RequestsService()
+request_service = RequestService()
 
-stt = WhisperSttService(r_service)
+stt = WhisperSttService(request_service)
 
-stt.process_audio('')
+curr_dir = os.getcwd()
+sample_file_path = os.path.join(curr_dir, 'audio_samples/audio_sample.mp3')
+print(curr_dir)
+print(sample_file_path)
+
+with open(sample_file_path, 'rb') as audio:
+    audio_data = audio.read()
+stt.process_audio(audio_data)
