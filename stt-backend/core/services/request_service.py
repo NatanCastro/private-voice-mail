@@ -4,9 +4,16 @@ from core.ports.request_service import T, IRequestService, ResponseKind
 
 
 class RequestService(IRequestService):
+    def __init__(self):
+        print("INFO: RequestService started")
+
     def get(self, url: str, response_kind: ResponseKind) -> Result[T, str]:
-        response = requests.get(url)
-        
+        response = None
+        try:
+            response = requests.get(url)
+        except Exception as e:
+            return Err(f"invalid url: {e}")
+
         match response_kind:
             case ResponseKind.JSON:
                 try:

@@ -7,11 +7,18 @@ from core.ports.stt_service import ISttService
 
 
 class SttService(ISttService):
-    def __init__(self, audio_service: IAudioService, whisper_stt_service: WhisperSttService) -> None:
+    _audio_service: IAudioService
+    _whisper_stt_service: WhisperSttService
+
+    def __init__(
+        self, audio_service: IAudioService, whisper_stt_service: WhisperSttService
+    ) -> None:
         self._audio_service = audio_service
         self._whisper_stt_service = whisper_stt_service
         self._task_queue = Queue[SttRequest]()
         self._processing_thread = Thread(target=self._process_tasks)
+        self._processing_thread.start()
+        print("INFO: SttService started")
 
     def add_task(self, task: SttRequest):
         self._task_queue.put(task)
@@ -29,4 +36,3 @@ class SttService(ISttService):
         transcript = self._whisper_stt_service.process_audio(audio_data, language)
 
         return transcript
-

@@ -1,18 +1,27 @@
-import os
+from adapters.inbound.grpc_server import serve
 from adapters.outbound.stt_service_whisper import WhisperSttService
 from core.services.request_service import RequestService
+from core.services.stt_service import SttService
+from core.services.audio_service import AudioService
+
+# request_service = RequestService()
+#
+# stt = WhisperSttService(request_service)
+#
+# curr_dir = os.getcwd()
+# sample_file_path = os.path.join(curr_dir, 'audio_samples/audio_sample.mp3')
+# print(curr_dir)
+# print(sample_file_path)
+#
+# with open(sample_file_path, 'rb') as audio:
+#     audio_data = audio.read()
+#
+#
+# stt.process_audio(audio_data, 'portuguese')
 
 request_service = RequestService()
+audio_service = AudioService(request_service)
+stt_whisper_service = WhisperSttService()
+stt_service = SttService(audio_service, stt_whisper_service)
 
-stt = WhisperSttService(request_service)
-
-curr_dir = os.getcwd()
-sample_file_path = os.path.join(curr_dir, 'audio_samples/audio_sample.mp3')
-print(curr_dir)
-print(sample_file_path)
-
-with open(sample_file_path, 'rb') as audio:
-    audio_data = audio.read()
-
-
-stt.process_audio(audio_data, 'portuguese')
+serve(stt_service)

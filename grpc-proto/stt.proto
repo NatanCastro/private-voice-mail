@@ -16,7 +16,8 @@ message STTResult {
 
 message AudioFileRequest {
   string user_id = 1;
-  string file_path = 2;
+  string audio_url = 2;
+  string language = 3;
 }
 
 message STTResponse {
