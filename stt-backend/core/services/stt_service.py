@@ -20,13 +20,13 @@ class SttService(ISttService):
         while True:
             task = self._task_queue.get()
             try:
-                self._process_stt(task.audio_url)
+                self._process_stt(task.audio_url, task.language)
             finally:
                 self._task_queue.task_done()
 
-    def _process_stt(self, url: str) -> str:
+    def _process_stt(self, url: str, language: str) -> str:
         audio_data = self._audio_service.get(url)
-        transcript = self._whisper_stt_service.process_audio(audio_data)
+        transcript = self._whisper_stt_service.process_audio(audio_data, language)
 
         return transcript
 

@@ -13,4 +13,6 @@ print(sample_file_path)
 
 with open(sample_file_path, 'rb') as audio:
     audio_data = audio.read()
-stt.process_audio(audio_data)
+
+
+stt.process_audio(audio_data, 'portuguese')

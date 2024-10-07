@@ -16,5 +16,5 @@ class ISttService():
     def add_task(self, task: SttRequest):
         raise NotImplementedError()
 
-    def _process_stt(self, url: str) -> str:
+    def _process_stt(self, url: str, language: str) -> str:
         raise NotImplementedError()
