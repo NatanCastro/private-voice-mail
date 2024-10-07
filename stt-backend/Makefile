@@ -7,7 +7,7 @@ COLOR_LIGHT_BLUE=\e[1;34m
 COLOR_NC=\e[0m
 
 protobuf: $(PROTOBUF_FILE_PATH)
-	python3 -m grpc_tools.protoc -I$(PROTOBUF_FOLDER) \
+	./.venv/bin/python3 -m grpc_tools.protoc -I$(PROTOBUF_FOLDER) \
 		--python_out=$(PROTOBUF_OUTPUT) --pyi_out=$(PROTOBUF_OUTPUT) --grpc_python_out=$(PROTOBUF_OUTPUT) \
 		$(PROTOBUF_FILE_PATH)
 
