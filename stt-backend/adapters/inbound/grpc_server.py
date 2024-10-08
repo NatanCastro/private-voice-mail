@@ -1,6 +1,7 @@
 from concurrent import futures
 
 import grpc
+from loguru import logger
 from core.model.stt import SttRequest
 from core.services.stt_service import SttService
 from generated.protobuf.stt_pb2 import STTResponse
@@ -14,8 +15,8 @@ class GRPCSttService(STTServiceServicer):
     _stt_service: SttService
 
     def __init__(self, stt_service: SttService):
-        print("INFO: GRPC server started")
         self._stt_service = stt_service
+        logger.info("GRPC server started")
 
     def SendSTTResult(self, request, context):
         __import__("pprint").pprint(request)

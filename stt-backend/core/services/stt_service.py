@@ -2,6 +2,8 @@ import os
 from queue import Queue
 from threading import Thread
 
+from loguru import logger
+
 from adapters.outbound.grpc_client import GRPCClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
 
@@ -23,7 +25,7 @@ class SttService(ISttService):
         self._task_queue = Queue[SttRequest]()
         self._processing_thread = Thread(target=self._process_tasks)
         self._processing_thread.start()
-        print("INFO: SttService started")
+        logger.info("SttService started")
 
     def add_task(self, task: SttRequest):
         self._task_queue.put(task)

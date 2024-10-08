@@ -1,5 +1,6 @@
 from threading import Thread
 
+from loguru import logger
 import torch
 from torch.nn.attention import SDPBackend, sdpa_kernel
 from tqdm import tqdm
@@ -17,17 +18,18 @@ class WhisperSttService:
             "compression_ratio_threshold": 1.35,  # zlib compression ratio threshold (in token space)
             "temperature": (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
             # "logprob_threshold": -1.0,
-            # "no_speech_threshold": 0.6,
+            "no_speech_threshold": 0.6,
             "return_timestamps": True,
         }
 
         self._model = self._load_model()
-        self._warmup_thread = Thread(target=self._warmup())
-        self._warmup_thread.start()
-        print("INFO: WhisperSttService started")
+        # self._warmup_thread = Thread(target=self._warmup())
+        # self._warmup_thread.start()
+        logger.info("WhisperSttService started")
 
     def _load_model(self):
         torch.set_float32_matmul_precision("high")
+
         device = "cuda:0" if torch.cuda.is_available() else "cpu"
         torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
@@ -78,7 +80,5 @@ class WhisperSttService:
 
         with sdpa_kernel(SDPBackend.MATH):
             result = self._model(audio_data, generate_kwargs=kwargs)
-
-        __import__("pprint").pprint(result)
 
         return result["text"]

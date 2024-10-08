@@ -3,6 +3,8 @@ from typing import TypeVar
 
 from result import Result
 
+from core.exceptions.request_exception import RequestError
+
 
 # Define the Enum for response kinds
 class ResponseKind(Enum):
@@ -15,5 +17,5 @@ T = TypeVar("T", dict, bytes)
 
 
 class IRequestService:
-    def get(self, url: str, response_kind: ResponseKind) -> Result[T, str]:
+    def get(self, url: str, response_kind: ResponseKind) -> Result[T, RequestError]:
         raise NotImplemented()

@@ -1,6 +1,9 @@
+from loguru import logger
+from result import Err, Ok
 from adapters.inbound.grpc_server import serve
 from adapters.outbound.grpc_client import GRPCClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
+from core.ports.request_service import ResponseKind
 from core.services.audio_service import AudioService
 from core.services.request_service import RequestService
 from core.services.stt_service import SttService
@@ -33,5 +36,14 @@ def main():
     serve(stt_service)
 
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
+
+request_service = RequestService()
+result = request_service.get("url://google.com", ResponseKind.JSON)
+
+match result:
+    case Ok(res):
+        __import__("pprint").pprint(res)
+    case Err(err):
+        logger.error(err)
