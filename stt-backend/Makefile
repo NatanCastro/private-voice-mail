@@ -1,4 +1,3 @@
-PIP = ./.venv/bin/pip
 PYTHON = ./.venv/bin/python3
 
 PROTOBUF_FOLDER = ../grpc-proto
@@ -16,18 +15,11 @@ protobuf: $(PROTOBUF_FILE_PATH)
 
 setup:
 	python3 -m venv .venv
-	$(PIP) install -r ./requirements.txt -q
+	poetry install
 	make protobuf
 	echo "$(COLOR_LIGHT_GREEN)--$(COLOR_NC)"
 	echo "$(COLOR_LIGHT_GREEN)-- run $(COLOR_LIGHT_BLUE)'source .venv/bin/activate'$(COLOR_LIGHT_GREEN) to enter the virtual enviroment$(COLOR_NC)"
 	echo "$(COLOR_LIGHT_GREEN)--$(COLOR_NC)"
 
-PYTHON_FORMAT_PACKAGES = "import json, sys; print('\n'.join([x['name'] for x in json.load(sys.stdin)]))"
-
-update-deps:
-	$(PIP) freeze --local | tee ./before_upgrade.txt
-	$(PIP) --disable-pip-version-check list --outdated --format=json | \
-		$(PYTHON) -c $(PYTHON_FORMAT_PACKAGES) | \
-		xargs -n1 ./.venv/bin/pip install -U
-	$(PIP) freeze > ./requirements.txt
-
+run:
+	poetry run python3 main.py

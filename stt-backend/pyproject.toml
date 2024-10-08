@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "stt-backend"
+version = "0.1.0"
+description = ""
+authors = ["Natan Gabriel Almeida de Castro <castro.natan@outlook.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.scripts]
+server = "main:main"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+grpcio = "^1.66.2"
+grpcio-tools = "^1.66.2"
+result = "^0.17.0"
+tqdm = "^4.66.5"
+torch = "^2.4.1"
+transformers = "^4.45.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
