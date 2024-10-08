@@ -2,8 +2,8 @@ from threading import Thread
 
 import torch
 from torch.nn.attention import SDPBackend, sdpa_kernel
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 from tqdm import tqdm
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 
 class WhisperSttService:

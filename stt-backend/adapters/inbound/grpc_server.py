@@ -1,4 +1,5 @@
 from concurrent import futures
+
 import grpc
 from core.model.stt import SttRequest
 from core.services.stt_service import SttService
@@ -17,14 +18,15 @@ class GRPCSttService(STTServiceServicer):
         self._stt_service = stt_service
 
     def SendSTTResult(self, request, context):
-        return super().SendSTTResult(request, context)
+        __import__("pprint").pprint(request)
+        return STTResponse(status="finished", message="stt request finished")
 
     def ProcessAudioFile(self, request, context):
         self._stt_service.add_task(
             SttRequest(request.user_id, request.audio_url, request.language)
         )
         context.set_code(grpc.StatusCode.OK)
-        return STTResponse(status="ok", message="processing request")
+        return STTResponse(status="ongoing", message="processing stt request")
 
 
 def serve(stt_service: SttService):

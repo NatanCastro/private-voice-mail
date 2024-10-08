@@ -1,6 +1,7 @@
 import requests
 from result import Err, Ok, Result
-from core.ports.request_service import T, IRequestService, ResponseKind
+
+from core.ports.request_service import IRequestService, ResponseKind, T
 
 
 class RequestService(IRequestService):
