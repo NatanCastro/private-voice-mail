@@ -17,6 +17,4 @@ class GRPCClient:
                 language=data.language,
             )
 
-            response = stub.SendSTTResult(result)
-
-            __import__("pprint").pprint(response)
+            _ = stub.SendSTTResult(result)
