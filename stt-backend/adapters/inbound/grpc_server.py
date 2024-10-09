@@ -31,5 +31,5 @@ def serve(stt_service: SttService):
     add_STTServiceServicer_to_server(GRPCSttService(stt_service), server)
     server.add_insecure_port("[::]:50051")
     server.start()
-    print("server started")
+    logger.info("server started on port 50051")
     server.wait_for_termination()
