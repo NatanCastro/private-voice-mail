@@ -11,5 +11,6 @@ class SttRequest:
 @dataclass
 class SttResult:
     user_id: str
+    success: bool
     transcript: str
     language: str

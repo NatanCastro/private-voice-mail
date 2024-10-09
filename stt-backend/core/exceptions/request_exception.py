@@ -17,3 +17,6 @@ class RequestError(Exception):
 
     def __str__(self) -> str:
         return f"{self._message}, ERROR_CODE: {self._code}"
+
+    def error_code(self) -> RequestErrorCode:
+        return self._code

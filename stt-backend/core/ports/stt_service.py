@@ -1,5 +1,8 @@
 from queue import Queue
 from threading import Thread
+from typing import NoReturn
+
+from result import Result
 
 from adapters.outbound.grpc_client import GRPCClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
@@ -23,8 +26,11 @@ class ISttService:
     ) -> None:
         raise NotImplementedError()
 
-    def add_task(self, task: SttRequest):
+    def add_task(self, task: SttRequest) -> None:
         raise NotImplementedError()
 
-    def _process_stt(self, url: str, language: str) -> str:
+    def _process_tasks(self) -> NoReturn:
+        raise NotImplementedError()
+
+    def _process_stt(self, url: str, language: str) -> Result[str, str]:
         raise NotImplementedError()

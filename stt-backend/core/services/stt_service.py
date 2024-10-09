@@ -1,8 +1,10 @@
 import os
 from queue import Queue
 from threading import Thread
+from typing import NoReturn
 
 from loguru import logger
+from result import Err, Ok, Result
 
 from adapters.outbound.grpc_client import GRPCClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
@@ -27,28 +29,31 @@ class SttService(ISttService):
         self._processing_thread.start()
         logger.info("SttService started")
 
-    def add_task(self, task: SttRequest):
+    def add_task(self, task: SttRequest) -> None:
         self._task_queue.put(task)
 
-    def _process_tasks(self):
+    def _process_tasks(self) -> NoReturn:
         while True:
             task = self._task_queue.get()
             try:
-                transcript = self._process_stt(task.audio_url, task.language)
-                response = SttResult(task.user_id, transcript, task.language)
-                self._grpc_client.send_stt_result(response)
+                transcript_result = self._process_stt(task.audio_url, task.language)
+                match transcript_result:
+                    case Ok(transcript):
+                        response = SttResult(
+                            task.user_id, True, transcript, task.language
+                        )
+                        self._grpc_client.send_stt_result(response)
+                    case Err(err):
+                        response = SttResult(task.user_id, False, err, task.language)
+                        self._grpc_client.send_stt_result(response)
             finally:
                 self._task_queue.task_done()
 
-    def _process_stt(self, url: str, language: str) -> str:
-        # audio_data = self._audio_service.get(url)
-        curr_dir = os.getcwd()
-        sample_file_path = os.path.join(curr_dir, "audio_samples/audio_sample.mp3")
-        print(curr_dir)
-        print(sample_file_path)
-
-        with open(sample_file_path, "rb") as audio:
-            audio_data = audio.read()
-        transcript = self._whisper_stt_service.process_audio(audio_data, language)
-
-        return transcript
+    def _process_stt(self, url: str, language: str) -> Result[str, str]:
+        audio_data = self._audio_service.get(url)
+        match audio_data:
+            case Ok(data):
+                transcript = self._whisper_stt_service.process_audio(data, language)
+                return Ok(transcript)
+            case Err(err):
+                return Err(err)
