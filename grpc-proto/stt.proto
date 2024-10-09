@@ -10,8 +10,9 @@ service STTService {
 
 message STTResult {
   string user_id = 1;
-  string transcript = 2;
-  string language = 3;
+  bool success = 2;
+  string transcript = 3;
+  string language = 4;
 }
 
 message AudioFileRequest {

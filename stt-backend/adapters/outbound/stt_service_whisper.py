@@ -13,18 +13,15 @@ class WhisperSttService:
     def __init__(self) -> None:
         self._base_kwargs = {
             "max_new_tokens": 400,
-            # "num_beams": 1,
-            # "condition_on_prev_tokens": False,
             "compression_ratio_threshold": 1.35,  # zlib compression ratio threshold (in token space)
             "temperature": (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
-            # "logprob_threshold": -1.0,
             "no_speech_threshold": 0.6,
             "return_timestamps": True,
         }
 
         self._model = self._load_model()
-        # self._warmup_thread = Thread(target=self._warmup())
-        # self._warmup_thread.start()
+        self._warmup_thread = Thread(target=self._warmup())
+        self._warmup_thread.start()
         logger.info("WhisperSttService started")
 
     def _load_model(self):

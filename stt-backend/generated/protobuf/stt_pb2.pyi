@@ -5,14 +5,16 @@ from typing import ClassVar as _ClassVar, Optional as _Optional
 DESCRIPTOR: _descriptor.FileDescriptor
 
 class STTResult(_message.Message):
-    __slots__ = ("user_id", "transcript", "language")
+    __slots__ = ("user_id", "success", "transcript", "language")
     USER_ID_FIELD_NUMBER: _ClassVar[int]
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
     TRANSCRIPT_FIELD_NUMBER: _ClassVar[int]
     LANGUAGE_FIELD_NUMBER: _ClassVar[int]
     user_id: str
+    success: bool
     transcript: str
     language: str
-    def __init__(self, user_id: _Optional[str] = ..., transcript: _Optional[str] = ..., language: _Optional[str] = ...) -> None: ...
+    def __init__(self, user_id: _Optional[str] = ..., success: bool = ..., transcript: _Optional[str] = ..., language: _Optional[str] = ...) -> None: ...
 
 class AudioFileRequest(_message.Message):
     __slots__ = ("user_id", "audio_url", "language")

@@ -18,10 +18,6 @@ class GRPCSttService(STTServiceServicer):
         self._stt_service = stt_service
         logger.info("GRPC server started")
 
-    def SendSTTResult(self, request, context):
-        __import__("pprint").pprint(request)
-        return STTResponse(status="finished", message="stt request finished")
-
     def ProcessAudioFile(self, request, context):
         self._stt_service.add_task(
             SttRequest(request.user_id, request.audio_url, request.language)
