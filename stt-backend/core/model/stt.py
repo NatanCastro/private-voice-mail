@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 
 
 @dataclass
@@ -9,8 +10,17 @@ class SttRequest:
 
 
 @dataclass
+class SttResultSuccess:
+    transcript: str
+
+
+@dataclass
+class SttResultFailure:
+    message: str
+
+
+@dataclass
 class SttResult:
     user_id: str
-    success: bool
-    transcript: str
-    language: str
+    status: Literal["Ok"] | Literal["Failure"]
+    data: SttResultSuccess | SttResultFailure
