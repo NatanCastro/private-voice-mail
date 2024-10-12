@@ -6,7 +6,6 @@ from typing import NoReturn
 from loguru import logger
 from result import Err, Ok, Result
 
-from adapters.outbound.grpc_client import GRPCClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
 
 from core.model.stt import SttRequest, SttResult
@@ -19,11 +18,9 @@ class SttService(ISttService):
         self,
         audio_service: IAudioService,
         whisper_stt_service: WhisperSttService,
-        grpc_client: GRPCClient,
     ) -> None:
         self._audio_service = audio_service
         self._whisper_stt_service = whisper_stt_service
-        self._grpc_client = grpc_client
         self._task_queue = Queue[SttRequest]()
         self._processing_thread = Thread(target=self._process_tasks)
         self._processing_thread.start()
@@ -42,10 +39,8 @@ class SttService(ISttService):
                         response = SttResult(
                             task.user_id, True, transcript, task.language
                         )
-                        self._grpc_client.send_stt_result(response)
                     case Err(err):
                         response = SttResult(task.user_id, False, err, task.language)
-                        self._grpc_client.send_stt_result(response)
             finally:
                 self._task_queue.task_done()
 

@@ -11,8 +11,6 @@ server = "main:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-grpcio = "^1.66.2"
-grpcio-tools = "^1.66.2"
 result = "^0.17.0"
 tqdm = "^4.66.5"
 torch = "^2.4.1"

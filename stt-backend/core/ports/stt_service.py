@@ -4,7 +4,6 @@ from typing import NoReturn
 
 from result import Result
 
-from adapters.outbound.grpc_client import GRPCClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
 
 from core.model.stt import SttRequest
@@ -16,13 +15,11 @@ class ISttService:
     _audio_service: IAudioService
     _whisper_stt_service: WhisperSttService
     _processing_thread: Thread
-    _grpc_client: GRPCClient
 
     def __init__(
         self,
         audio_service: IAudioService,
         whisper_stt_service: WhisperSttService,
-        grpc_client: GRPCClient,
     ) -> None:
         raise NotImplementedError()
 
