@@ -14,12 +14,14 @@ class ISttService:
     _task_queue: Queue[SttRequest]
     _audio_service: IAudioService
     _whisper_stt_service: WhisperSttService
+    _rabbitmq_client: None
     _processing_thread: Thread
 
     def __init__(
         self,
         audio_service: IAudioService,
         whisper_stt_service: WhisperSttService,
+        rabbitmq_client: None,
     ) -> None:
         raise NotImplementedError()
 
