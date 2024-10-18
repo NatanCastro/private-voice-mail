@@ -1,13 +1,12 @@
-# TODO: implement rabbitmq client
-
-
+import os
 import pika
 
 
 class RabbitMQClient:
     def __init__(self):
-        # TODO: use env variables for rabbitmq user and password
-        credentials = pika.PlainCredentials("user", "password")
+        username = os.environ.get("RABBITMQ_USERNAME") or "user"
+        password = os.environ.get("RABBITMQ_PASSOWORD") or "password"
+        credentials = pika.PlainCredentials(username, password)
         connection_params = pika.ConnectionParameters(
             host="localhost", credentials=credentials
         )

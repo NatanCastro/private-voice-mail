@@ -1,3 +1,4 @@
+import os
 import pika
 from threading import Thread
 from pika import exceptions as pk_exceptions
@@ -9,8 +10,9 @@ from core.services.stt_service import SttService
 
 class RabbitMQServer:
     def __init__(self, stt_service: SttService):
-        # TODO: use env variables for rabbitmq user and password
-        credentials = pika.PlainCredentials("user", "password")
+        username = os.environ.get("RABBITMQ_USERNAME") or "user"
+        password = os.environ.get("RABBITMQ_PASSOWORD") or "password"
+        credentials = pika.PlainCredentials(username, password)
         connection_params = pika.ConnectionParameters(
             host="localhost", credentials=credentials
         )
