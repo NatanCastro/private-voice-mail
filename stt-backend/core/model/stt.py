@@ -37,3 +37,13 @@ class SttResult:
     user_id: str
     status: Literal["Ok"] | Literal["Failure"]
     data: SttResultSuccess | SttResultFailure
+
+    def __str__(self) -> str:
+        data: str
+        match self.data:
+            case SttResultSuccess():
+                data = self.data.transcript
+            case SttResultFailure():
+                data = self.data.message
+
+        return f"{self.user_id},{self.status},{data}"

@@ -9,6 +9,7 @@ from core.services.stt_service import SttService
 
 class RabbitMQServer:
     def __init__(self, stt_service: SttService):
+        # TODO: use env variables for rabbitmq user and password
         credentials = pika.PlainCredentials("user", "password")
         connection_params = pika.ConnectionParameters(
             host="localhost", credentials=credentials

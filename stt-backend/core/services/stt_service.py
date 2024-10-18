@@ -5,6 +5,7 @@ from typing import NoReturn
 from loguru import logger
 from result import Err, Ok, Result
 
+from adapters.outbound.rabbitmq_client import RabbitMQClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
 
 from core.model.stt import SttRequest, SttResult, SttResultFailure, SttResultSuccess
@@ -17,7 +18,7 @@ class SttService(ISttService):
         self,
         audio_service: IAudioService,
         whisper_stt_service: WhisperSttService,
-        rabbitmq_client: None,
+        rabbitmq_client: RabbitMQClient,
     ) -> None:
         self._audio_service = audio_service
         self._whisper_stt_service = whisper_stt_service
@@ -46,7 +47,7 @@ class SttService(ISttService):
                         response = SttResult(
                             task.user_id, "Failure", SttResultFailure(err)
                         )
-                self._rabbitmq_client.send(response)
+                self._rabbitmq_client.send_message(response.__str__())
             finally:
                 self._task_queue.task_done()
 
