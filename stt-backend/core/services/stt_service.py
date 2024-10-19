@@ -31,9 +31,10 @@ class SttService(ISttService):
     def add_task(self, task: SttRequest) -> None:
         self._task_queue.put(task)
 
-    def _process_tasks(self) -> NoReturn:
+    def _process_tasks(self):
         while True:
             task = self._task_queue.get()
+
             try:
                 transcript_result = self._process_stt(task.audio_url, task.language)
                 match transcript_result:

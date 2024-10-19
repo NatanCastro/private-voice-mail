@@ -12,7 +12,8 @@ class SttRequest:
 
 
 def stt_request_from_string(data: str) -> Result[SttRequest, str]:
-    split_data = list(filter(lambda i: i == "", data.split(",")))
+    split_data = list(data.split(","))
+    print(split_data)
     if len(split_data) != 3:
         return Err("invalid format")
     (user_id, audio_url, language) = split_data
