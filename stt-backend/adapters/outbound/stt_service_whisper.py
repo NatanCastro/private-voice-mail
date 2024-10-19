@@ -67,6 +67,7 @@ class WhisperSttService:
         result = None
         kwargs = self._base_kwargs.copy()
         kwargs.update({"language": str(language)})
+
         match language:
             case "portuguese":
                 kwargs.update({"forced_decoder_ids": None})
@@ -77,5 +78,6 @@ class WhisperSttService:
 
         with sdpa_kernel(SDPBackend.MATH):
             result = self._model(audio_data, generate_kwargs=kwargs)
+            __import__("pprint").pprint(result)
 
         return result["text"]

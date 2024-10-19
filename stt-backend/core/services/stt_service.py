@@ -1,4 +1,3 @@
-import os
 from queue import Queue
 from threading import Thread
 from typing import NoReturn
@@ -6,10 +5,10 @@ from typing import NoReturn
 from loguru import logger
 from result import Err, Ok, Result
 
-from adapters.outbound.grpc_client import GRPCClient
+from adapters.outbound.rabbitmq_client import RabbitMQClient
 from adapters.outbound.stt_service_whisper import WhisperSttService
 
-from core.model.stt import SttRequest, SttResult
+from core.model.stt import SttRequest, SttResult, SttResultFailure, SttResultSuccess
 from core.ports.audio_service import IAudioService
 from core.ports.stt_service import ISttService
 
@@ -19,11 +18,11 @@ class SttService(ISttService):
         self,
         audio_service: IAudioService,
         whisper_stt_service: WhisperSttService,
-        grpc_client: GRPCClient,
+        rabbitmq_client: RabbitMQClient,
     ) -> None:
         self._audio_service = audio_service
         self._whisper_stt_service = whisper_stt_service
-        self._grpc_client = grpc_client
+        self._rabbitmq_client = rabbitmq_client
         self._task_queue = Queue[SttRequest]()
         self._processing_thread = Thread(target=self._process_tasks)
         self._processing_thread.start()
@@ -32,20 +31,24 @@ class SttService(ISttService):
     def add_task(self, task: SttRequest) -> None:
         self._task_queue.put(task)
 
-    def _process_tasks(self) -> NoReturn:
+    def _process_tasks(self):
         while True:
             task = self._task_queue.get()
+
             try:
                 transcript_result = self._process_stt(task.audio_url, task.language)
                 match transcript_result:
                     case Ok(transcript):
                         response = SttResult(
-                            task.user_id, True, transcript, task.language
+                            task.user_id,
+                            "Ok",
+                            SttResultSuccess(transcript),
                         )
-                        self._grpc_client.send_stt_result(response)
                     case Err(err):
-                        response = SttResult(task.user_id, False, err, task.language)
-                        self._grpc_client.send_stt_result(response)
+                        response = SttResult(
+                            task.user_id, "Failure", SttResultFailure(err)
+                        )
+                self._rabbitmq_client.send_message(response.__str__())
             finally:
                 self._task_queue.task_done()
 
