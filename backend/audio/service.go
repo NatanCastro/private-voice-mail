@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -26,7 +27,8 @@ func (as *AudioStore) Save(fileName string, audioData []byte) (int, error) {
 	as.Lock()
 
 	file_id := as.NextId
-	file_path := fmt.Sprintf("%s/%d", "audios", file_id)
+	new_file_name := fmt.Sprintf("%d.%s", file_id, strings.Split(fileName, ".")[1])
+	file_path := fmt.Sprintf("%s/%s", "audios", new_file_name)
 
 	err := os.WriteFile(file_path, audioData, os.ModePerm)
 	if err != nil {
