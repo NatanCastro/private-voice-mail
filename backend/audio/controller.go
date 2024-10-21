@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -27,14 +28,14 @@ func (as *AudioController) SaveAudio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20) // 10 MB limit
+	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, "Unable to parse form data", http.StatusBadRequest)
 		log.Printf("ERROR: Failed to parse form data: %v\n", err)
 		return
 	}
 
-	file, fileHeader, err := r.FormFile("audio")
+	file, file_header, err := r.FormFile("audio")
 	if err != nil {
 		log.Printf("ERROR: Could not read audio file from form: %v\n", err)
 		http.Error(w, "Could not read audio file from form", http.StatusBadRequest)
@@ -49,14 +50,14 @@ func (as *AudioController) SaveAudio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fileID, err := as.store.Save(fileHeader.Filename, buf.Bytes())
+	file_id, err := as.store.Save(file_header.Filename, string(file_header.Header["Content-Type"][0]), buf.Bytes())
 	if err != nil {
 		log.Printf("ERROR: Something went wrong while saving file: %v\n", err)
 		http.Error(w, "Something went wrong while saving file", http.StatusInternalServerError)
 		return
 	}
 
-	response, err := json.Marshal(Audio{Id: fileID, Name: fileHeader.Filename})
+	response, err := json.Marshal(Audio{Id: file_id, Name: file_header.Filename})
 	if err != nil {
 		log.Printf("ERROR: Failed to create response JSON: %v", err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
@@ -64,10 +65,43 @@ func (as *AudioController) SaveAudio(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	w.Write(response)
 }
 
 func isMultipartFormData(contentType string) bool {
 	return strings.Contains(contentType, "multipart/form-data")
+}
+
+func (as *AudioController) GetAudio(w http.ResponseWriter, r *http.Request) {
+	audio_id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		http.Error(w, "Invalid audio Id format", http.StatusBadRequest)
+		return
+	}
+
+	audio_data, err := as.store.Get(audio_id)
+	if err != nil {
+		re, ok := err.(*ReadingFileError)
+
+		if ok {
+			response, err := json.Marshal(re)
+			if err != nil {
+				http.Error(w, "somethign went wrong", http.StatusInternalServerError)
+			}
+			switch re.ErrorCode {
+			case 1:
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write(response)
+				return
+			case 2:
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(response)
+				return
+			}
+		}
+	}
+
+	w.Header().Set("Content-Type", audio_data.MimeType)
+	w.Write(audio_data.Data)
 }

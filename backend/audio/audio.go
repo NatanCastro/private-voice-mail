@@ -8,8 +8,11 @@ import (
 )
 
 type Audio struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
+	Id        int    `json:"id"`
+	Name      string `json:"name"`
+	Extension string `json:"-"`
+	MimeType  string `json:"-"`
+	Size      int    `json:"-"` // size of the audio in bytes
 }
 
 func CreateAudioFolder() {
@@ -25,4 +28,5 @@ func CreateAudioFolder() {
 
 func BindAudioRoutes(ac *AudioController, mux *http.ServeMux) {
 	mux.HandleFunc("POST /audio", ac.SaveAudio)
+	mux.HandleFunc("GET /audio/{id}", ac.GetAudio)
 }
