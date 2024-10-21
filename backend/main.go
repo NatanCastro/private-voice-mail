@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	audio.CreateAudioFolder()
 	defer (func() {
 		err := recover()
 		fmt.Printf("ERROR: %v\n", err)
