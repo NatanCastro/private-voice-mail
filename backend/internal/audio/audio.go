@@ -3,7 +3,6 @@ package audio
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"os"
 )
 
@@ -24,9 +23,4 @@ func CreateAudioFolder() {
 			os.Exit(1)
 		}
 	}
-}
-
-func BindAudioRoutes(ac *AudioController, mux *http.ServeMux) {
-	mux.HandleFunc("POST /audio", ac.SaveAudio)
-	mux.HandleFunc("GET /audio/{id}", ac.GetAudio)
 }

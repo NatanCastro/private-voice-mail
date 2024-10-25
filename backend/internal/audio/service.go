@@ -8,6 +8,8 @@ import (
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/NatanCastro/private-voice-mail/backend/pkg/rabbitmq"
 )
 
 type ReadingFileError struct {
@@ -33,26 +35,46 @@ func (rf *ReadingFileError) Error() string {
 	return fmt.Sprintf("error code: %d\nmessage: %s", rf.ErrorCode, rf.Err)
 }
 
-type AudioStore struct {
+type RabbitMQData struct {
+	client     *rabbitmq.RabbitClient
+	exchange   string
+	queue      string
+	routingKey string
+}
+
+func NewRabbitMQData(client *rabbitmq.RabbitClient, exchange, routingKey, queue string) *RabbitMQData {
+	return &RabbitMQData{
+		client:     client,
+		exchange:   exchange,
+		queue:      queue,
+		routingKey: routingKey,
+	}
+}
+
+type AudioService struct {
 	sync.Mutex
 
 	Audios map[int]Audio
 	NextId int
+
+	RabbitMQData *RabbitMQData
 }
 
-func NewAudioStore() *AudioStore {
-	as := &AudioStore{
-		Audios: make(map[int]Audio),
-		NextId: 0,
+func NewAudioService(rmq *RabbitMQData) *AudioService {
+	as := &AudioService{
+		Audios:       make(map[int]Audio),
+		NextId:       0,
+		RabbitMQData: rmq,
 	}
 	return as
 }
 
-func (as *AudioStore) Save(fileName, mimeType string, audioData []byte) (int, error) {
+func (as *AudioService) Save(fileName, mimeType string, audioData []byte) (int, error) {
 	as.Lock()
 
 	file_id := as.NextId
-	file_ext := strings.Split(fileName, ".")[1]
+	file_parts := strings.Split(fileName, ".")
+	file_ext := file_parts[len(file_parts)-1]
 	new_file_name := fmt.Sprintf("%d.%s", file_id, file_ext)
 	file_path := fmt.Sprintf("%s/%s", "audios", new_file_name)
 
@@ -75,7 +97,7 @@ func (as *AudioStore) Save(fileName, mimeType string, audioData []byte) (int, er
 	return file_id, nil
 }
 
-func (as *AudioStore) Get(id int) (*AudioResponse, error) {
+func (as *AudioService) Get(id int) (*AudioResponse, error) {
 
 	if id < 0 || id > as.NextId {
 		return nil, NewReadingFileError(fmt.Sprintf("Audio file with the id %d does not exists", id), 1)
@@ -108,4 +130,22 @@ func (as *AudioStore) Get(id int) (*AudioResponse, error) {
 	}
 
 	return response, nil
+}
+
+func (as *AudioService) FindOne(id int) (*Audio, error) {
+	audio, ok := as.Audios[id]
+	if !ok {
+		return nil, fmt.Errorf("Could not find audio with Id %d", id)
+	}
+
+	return &audio, nil
+}
+
+func (as *AudioService) SendAudioToStt(id int, language string) (string, error) {
+	_, err := as.Get(id)
+	if err != nil {
+		return "", fmt.Errorf("Could not send audio to stt: %v", err)
+	}
+
+	return "", nil
 }

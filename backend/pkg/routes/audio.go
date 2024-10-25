@@ -1,4 +1,4 @@
-package audio
+package routes
 
 import (
 	"bytes"
@@ -8,20 +8,27 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/NatanCastro/private-voice-mail/backend/internal/audio"
 )
 
-type AudioController struct {
-	store *AudioStore
+func BindAudioRoutes(ac *AudioController, mux *http.ServeMux) {
+	mux.HandleFunc("POST /audio", ac.SaveAudio)
+	mux.HandleFunc("GET /audio/file/{id}", ac.GetAudio)
 }
 
-func NewAudioController(s *AudioStore) *AudioController {
+type AudioController struct {
+	store *audio.AudioService
+}
+
+func NewAudioController(s *audio.AudioService) *AudioController {
 	as := &AudioController{
 		store: s,
 	}
 	return as
 }
 
-func (as *AudioController) SaveAudio(w http.ResponseWriter, r *http.Request) {
+func (ac *AudioController) SaveAudio(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("Content-Type") == "" || !isMultipartFormData(r.Header.Get("Content-Type")) {
 		http.Error(w, "request Content-Type isn't multipart/form-data", http.StatusBadRequest)
 		log.Println("ERROR: request Content-Type isn't multipart/form-data")
@@ -50,14 +57,14 @@ func (as *AudioController) SaveAudio(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file_id, err := as.store.Save(file_header.Filename, string(file_header.Header["Content-Type"][0]), buf.Bytes())
+	file_id, err := ac.store.Save(file_header.Filename, string(file_header.Header["Content-Type"][0]), buf.Bytes())
 	if err != nil {
 		log.Printf("ERROR: Something went wrong while saving file: %v\n", err)
 		http.Error(w, "Something went wrong while saving file", http.StatusInternalServerError)
 		return
 	}
 
-	response, err := json.Marshal(Audio{Id: file_id, Name: file_header.Filename})
+	response, err := json.Marshal(audio.Audio{Id: file_id, Name: file_header.Filename})
 	if err != nil {
 		log.Printf("ERROR: Failed to create response JSON: %v", err)
 		http.Error(w, "Something went wrong", http.StatusInternalServerError)
@@ -73,16 +80,16 @@ func isMultipartFormData(contentType string) bool {
 	return strings.Contains(contentType, "multipart/form-data")
 }
 
-func (as *AudioController) GetAudio(w http.ResponseWriter, r *http.Request) {
+func (ac *AudioController) GetAudio(w http.ResponseWriter, r *http.Request) {
 	audio_id, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "Invalid audio Id format", http.StatusBadRequest)
 		return
 	}
 
-	audio_data, err := as.store.Get(audio_id)
+	audio_data, err := ac.store.Get(audio_id)
 	if err != nil {
-		re, ok := err.(*ReadingFileError)
+		re, ok := err.(*audio.ReadingFileError)
 
 		if ok {
 			response, err := json.Marshal(re)
