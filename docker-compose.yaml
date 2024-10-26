@@ -1,10 +1,22 @@
+include:
+  - 
+
 services:
+  nginx:
+    container_name: file_server
+    build: ./nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./audio_files:/usr/share/nginx/html/audio_files:rw,z
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
+    restart: unless-stopped
   rabbitmq:
     image: rabbitmq:management
     container_name: messaging-service
     ports:
       - "5672:5672"
-      - "8080:15672"
+      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
