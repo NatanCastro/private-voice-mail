@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/NatanCastro/private-voice-mail/backend/internal/audio"
+	"github.com/NatanCastro/private-voice-mail/backend/internal/config"
+	"github.com/NatanCastro/private-voice-mail/backend/internal/files"
 	"github.com/NatanCastro/private-voice-mail/backend/pkg/rabbitmq"
 	"github.com/NatanCastro/private-voice-mail/backend/pkg/routes"
 	"github.com/streadway/amqp"
@@ -40,8 +42,9 @@ func main() {
 		}
 	}()
 
-	rabbitMQData := audio.NewRabbitMQData(rabbitClient, "stt_request_exchange", "request", "stt_request")
-	audioService := audio.NewAudioService(rabbitMQData)
+	envService := config.NewEnvService()
+	fileService := files.NewFileService(envService)
+	audioService := audio.NewAudioService(rabbitClient, fileService)
 	audioController := routes.NewAudioController(audioService)
 
 	routes.BindAudioRoutes(audioController, mux)

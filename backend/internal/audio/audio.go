@@ -11,7 +11,7 @@ type Audio struct {
 	Name      string `json:"name"`
 	Extension string `json:"-"`
 	MimeType  string `json:"-"`
-	Size      int    `json:"-"` // size of the audio in bytes
+	Path      string `json:"path"`
 }
 
 func CreateAudioFolder() {

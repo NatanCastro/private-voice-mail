@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/NatanCastro/private-voice-mail/backend/internal/files"
 	"github.com/NatanCastro/private-voice-mail/backend/pkg/rabbitmq"
 )
 
@@ -35,66 +36,50 @@ func (rf *ReadingFileError) Error() string {
 	return fmt.Sprintf("error code: %d\nmessage: %s", rf.ErrorCode, rf.Err)
 }
 
-type RabbitMQData struct {
-	client     *rabbitmq.RabbitClient
-	exchange   string
-	queue      string
-	routingKey string
-}
-
-func NewRabbitMQData(client *rabbitmq.RabbitClient, exchange, routingKey, queue string) *RabbitMQData {
-	return &RabbitMQData{
-		client:     client,
-		exchange:   exchange,
-		queue:      queue,
-		routingKey: routingKey,
-	}
-}
-
 type AudioService struct {
 	sync.Mutex
 
 	Audios map[int]Audio
 	NextId int
 
-	RabbitMQData *RabbitMQData
+	RabbitMQClient *rabbitmq.RabbitClient
+	FileService    *files.FileService
 }
 
-func NewAudioService(rmq *RabbitMQData) *AudioService {
-	as := &AudioService{
-		Audios:       make(map[int]Audio),
-		NextId:       0,
-		RabbitMQData: rmq,
+func NewAudioService(rabbitMQClient *rabbitmq.RabbitClient, fileService *files.FileService) *AudioService {
+	return &AudioService{
+		Audios:         make(map[int]Audio),
+		NextId:         0,
+		RabbitMQClient: rabbitMQClient,
+		FileService:    fileService,
 	}
-	return as
 }
 
 func (as *AudioService) Save(fileName, mimeType string, audioData []byte) (int, error) {
 	as.Lock()
 
-	file_id := as.NextId
-	file_parts := strings.Split(fileName, ".")
-	file_ext := file_parts[len(file_parts)-1]
-	new_file_name := fmt.Sprintf("%d.%s", file_id, file_ext)
-	file_path := fmt.Sprintf("%s/%s", "audios", new_file_name)
+	fileId := as.NextId
+	fileParts := strings.Split(fileName, ".")
+	fileExtention := fileParts[len(fileParts)-1]
+	newFileName := fmt.Sprintf("%d.%s", fileId, fileExtention)
 
-	err := os.WriteFile(file_path, audioData, os.ModePerm)
+	path, err := as.FileService.Save("http", "files", newFileName, audioData)
+
 	if err != nil {
-		fmt.Printf("ERROR: %v\n", err)
-		return -1, errors.New("Could not save file")
+		return -1, err
 	}
 
 	as.Audios[as.NextId] = Audio{
-		Id:        file_id,
+		Id:        fileId,
 		Name:      fileName,
-		Extension: file_ext,
+		Extension: fileExtention,
 		MimeType:  mimeType,
-		Size:      len(audioData),
+		Path:      path,
 	}
 
 	as.NextId++
 
-	return file_id, nil
+	return fileId, nil
 }
 
 func (as *AudioService) Get(id int) (*AudioResponse, error) {
@@ -103,16 +88,16 @@ func (as *AudioService) Get(id int) (*AudioResponse, error) {
 		return nil, NewReadingFileError(fmt.Sprintf("Audio file with the id %d does not exists", id), 1)
 	}
 
-	audio_data := as.Audios[id]
+	audioData := as.Audios[id]
 
-	audio_file_path := fmt.Sprintf("audios/%d.%s", id, audio_data.Extension)
+	audioFilePath := fmt.Sprintf("audios/%d.%s", id, audioData.Extension)
 
-	_, err := os.Stat(audio_file_path)
+	_, err := os.Stat(audioFilePath)
 	if err != nil && errors.Is(err, os.ErrNotExist) {
 		return nil, NewReadingFileError("Could not find audio file", 1)
 	}
 
-	file, err := os.Open(audio_file_path)
+	file, err := os.Open(audioFilePath)
 	if err != nil {
 		return nil, NewReadingFileError("Something went wrong", 2)
 	}
@@ -126,7 +111,7 @@ func (as *AudioService) Get(id int) (*AudioResponse, error) {
 
 	response := &AudioResponse{
 		Data:     buf.Bytes(),
-		MimeType: audio_data.MimeType,
+		MimeType: audioData.MimeType,
 	}
 
 	return response, nil
@@ -142,7 +127,7 @@ func (as *AudioService) FindOne(id int) (*Audio, error) {
 }
 
 func (as *AudioService) SendAudioToStt(id int, language string) (string, error) {
-	_, err := as.Get(id)
+	_, err := as.FindOne(id)
 	if err != nil {
 		return "", fmt.Errorf("Could not send audio to stt: %v", err)
 	}
