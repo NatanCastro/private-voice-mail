@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
   rabbitmq:
     image: rabbitmq:management
-    container_name: messaging-service
+    container_name: messaging_service
     ports:
       - "5672:5672"
       - "15672:15672"
