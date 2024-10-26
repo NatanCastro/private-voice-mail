@@ -1,11 +1,8 @@
 package audio
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"io"
-	"os"
 	"strings"
 	"sync"
 
@@ -57,6 +54,7 @@ func NewAudioService(rabbitMQClient *rabbitmq.RabbitClient, fileService *files.F
 
 func (as *AudioService) Save(fileName, mimeType string, audioData []byte) (int, error) {
 	as.Lock()
+	defer as.Unlock()
 
 	fileId := as.NextId
 	fileParts := strings.Split(fileName, ".")
@@ -80,41 +78,6 @@ func (as *AudioService) Save(fileName, mimeType string, audioData []byte) (int, 
 	as.NextId++
 
 	return fileId, nil
-}
-
-func (as *AudioService) Get(id int) (*AudioResponse, error) {
-
-	if id < 0 || id > as.NextId {
-		return nil, NewReadingFileError(fmt.Sprintf("Audio file with the id %d does not exists", id), 1)
-	}
-
-	audioData := as.Audios[id]
-
-	audioFilePath := fmt.Sprintf("audios/%d.%s", id, audioData.Extension)
-
-	_, err := os.Stat(audioFilePath)
-	if err != nil && errors.Is(err, os.ErrNotExist) {
-		return nil, NewReadingFileError("Could not find audio file", 1)
-	}
-
-	file, err := os.Open(audioFilePath)
-	if err != nil {
-		return nil, NewReadingFileError("Something went wrong", 2)
-	}
-	defer file.Close()
-
-	buf := bytes.NewBuffer(nil)
-	if _, err := io.Copy(buf, file); err != nil {
-		fmt.Printf("ERROR: Could not read file content: %v\n", err)
-		return nil, NewReadingFileError("Something went wrong while reading the file", 2)
-	}
-
-	response := &AudioResponse{
-		Data:     buf.Bytes(),
-		MimeType: audioData.MimeType,
-	}
-
-	return response, nil
 }
 
 func (as *AudioService) FindOne(id int) (*Audio, error) {
