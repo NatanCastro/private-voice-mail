@@ -1,7 +1,6 @@
 package audio
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -9,29 +8,6 @@ import (
 	"github.com/NatanCastro/private-voice-mail/backend/internal/files"
 	"github.com/NatanCastro/private-voice-mail/backend/pkg/rabbitmq"
 )
-
-type ReadingFileError struct {
-	Err       error  `json:"-"`
-	ErrorCode int    `json:"error_code"`
-	Message   string `json:"message"`
-}
-
-type AudioResponse struct {
-	Data     []byte
-	MimeType string
-}
-
-func NewReadingFileError(message string, code int) *ReadingFileError {
-	return &ReadingFileError{
-		Err:       errors.New(message),
-		ErrorCode: code,
-		Message:   message,
-	}
-}
-
-func (rf *ReadingFileError) Error() string {
-	return fmt.Sprintf("error code: %d\nmessage: %s", rf.ErrorCode, rf.Err)
-}
 
 type AudioService struct {
 	sync.Mutex
