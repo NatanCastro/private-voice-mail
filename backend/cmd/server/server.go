@@ -21,7 +21,10 @@ func main() {
 	})()
 	mux := http.NewServeMux()
 
-	rabbitClient, err := rabbitmq.NewRabbitClient("amqp://user:password@localhost:5672/")
+	envService := config.NewEnvService()
+
+	rabbitClient, err := rabbitmq.NewRabbitClient(envService)
+
 	if err != nil {
 		panic(fmt.Errorf("Could not connnect to rabbitmq, %v", err))
 	}
@@ -42,7 +45,6 @@ func main() {
 		}
 	}()
 
-	envService := config.NewEnvService()
 	fileService := files.NewFileService(envService)
 	audioService := audio.NewAudioService(rabbitClient, fileService)
 	audioController := routes.NewAudioController(audioService)

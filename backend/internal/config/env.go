@@ -8,6 +8,9 @@ type EnvService struct {
 	FileServerPassword string
 
 	// rabbitmq variables
+	RabbitMQServer        string
+	RabbitMQUser          string
+	RabbitMQPassword      string
 	SttRequestExchange    string
 	SttRequestRoutingKey  string
 	SttRequestQueue       string
@@ -29,6 +32,9 @@ func NewEnvService() *EnvService {
 		FileServerUser:     getEnvOrDefault("FILE_SERVER_USER", "upload_user"),
 		FileServerPassword: getEnvOrDefault("FILE_SERVER_PASSWORD", "pass"),
 
+		RabbitMQServer:        getEnvOrDefault("RABBITMQ_SERVER", "localhost:5672"),
+		RabbitMQUser:          getEnvOrDefault("RABBITMQ_USER", "user"),
+		RabbitMQPassword:      getEnvOrDefault("RABBITMQ_PASSWORD", "password"),
 		SttRequestExchange:    getEnvOrDefault("STT_REQUEST_EXCHANGE", "stt_request_exchange"),
 		SttRequestRoutingKey:  getEnvOrDefault("STT_REQUEST_ROUTINGKEY", "request"),
 		SttRequestQueue:       getEnvOrDefault("STT_REQUEST_QUEUE", "sst_request"),
