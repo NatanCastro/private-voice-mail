@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+CREATE TABLE audio (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    extension VARCHAR(50) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    path VARCHAR(500) NOT NULL
+);
