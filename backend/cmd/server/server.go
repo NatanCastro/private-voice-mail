@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/NatanCastro/private-voice-mail/backend/internal/audio"
 	"github.com/NatanCastro/private-voice-mail/backend/internal/config"
+	"github.com/NatanCastro/private-voice-mail/backend/internal/database"
 	"github.com/NatanCastro/private-voice-mail/backend/internal/files"
-	"github.com/NatanCastro/private-voice-mail/backend/pkg/rabbitmq"
-	"github.com/NatanCastro/private-voice-mail/backend/pkg/routes"
+	"github.com/NatanCastro/private-voice-mail/backend/internal/rabbitmq"
+
+	"github.com/jackc/pgx/v5"
 	"github.com/streadway/amqp"
 )
 
@@ -19,18 +23,29 @@ func main() {
 		err := recover()
 		fmt.Printf("ERROR: %v\n", err)
 	})()
+
 	mux := http.NewServeMux()
 
 	envService := config.NewEnvService()
 
-	rabbitClient, err := rabbitmq.NewRabbitClient(envService)
+	conn, err := pgx.Connect(context.Background(), envService.DatabaseUrl)
+	if err != nil {
+		os.Exit(1)
+	}
+	defer conn.Close(context.Background())
+	q := database.New(conn)
 
+	rabbitClient, err := rabbitmq.NewRabbitClient(envService)
 	if err != nil {
 		panic(fmt.Errorf("Could not connnect to rabbitmq, %v", err))
 	}
 	defer rabbitClient.Close()
 
-	msgs, err := rabbitClient.ConsumeMessages("stt_response_exchange", "response", "stt_response")
+	exchange := envService.SttResponseExchange
+	routingKey := envService.SttResponseRoutingKey
+	queue := envService.SttResponseQueue
+
+	msgs, err := rabbitClient.ConsumeMessages(exchange, routingKey, queue)
 	if err != nil {
 		slog.Error("Failed to consume messages", slog.String("error", err.Error()))
 		return
@@ -46,10 +61,10 @@ func main() {
 	}()
 
 	fileService := files.NewFileService(envService)
-	audioService := audio.NewAudioService(rabbitClient, fileService)
-	audioController := routes.NewAudioController(audioService)
+	audioService := audio.NewAudioService(rabbitClient, fileService, envService)
+	audioController := audio.NewAudioController(audioService)
 
-	routes.BindAudioRoutes(audioController, mux)
+	audio.BindAudioRoutes(audioController, mux)
 
 	fmt.Println("INFO: starting server at http://localhost:8000")
 	http.ListenAndServe("localhost:8000", mux)
