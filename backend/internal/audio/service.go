@@ -1,36 +1,42 @@
 package audio
 
 import (
+	"context"
 	"fmt"
 	"strings"
-	"sync"
 
+	"github.com/NatanCastro/private-voice-mail/backend/internal/config"
+	"github.com/NatanCastro/private-voice-mail/backend/internal/database"
 	"github.com/NatanCastro/private-voice-mail/backend/internal/files"
-	"github.com/NatanCastro/private-voice-mail/backend/pkg/rabbitmq"
+	"github.com/NatanCastro/private-voice-mail/backend/internal/rabbitmq"
+	"github.com/google/uuid"
 )
 
 type AudioService struct {
-	sync.Mutex
-
-	Audios map[int]Audio
-	NextId int
-
-	RabbitMQClient *rabbitmq.RabbitClient
-	FileService    *files.FileService
+	RabbitMQClient  *rabbitmq.RabbitClient
+	FileService     *files.FileService
+	EnvService      *config.EnvService
+	DatabaseQueries *database.Queries
 }
 
-func NewAudioService(rabbitMQClient *rabbitmq.RabbitClient, fileService *files.FileService) *AudioService {
+func NewAudioService(
+	rabbitMQClient *rabbitmq.RabbitClient,
+	fileService *files.FileService,
+	envService *config.EnvService,
+	databaseQueries *database.Queries,
+) *AudioService {
 	return &AudioService{
-		Audios:         make(map[int]Audio),
-		NextId:         0,
-		RabbitMQClient: rabbitMQClient,
-		FileService:    fileService,
+		RabbitMQClient:  rabbitMQClient,
+		FileService:     fileService,
+		EnvService:      envService,
+		DatabaseQueries: databaseQueries,
 	}
 }
 
 func (as *AudioService) Save(fileName, mimeType string, audioData []byte) (int, error) {
-	as.Lock()
-	defer as.Unlock()
+	ID := uuid.New()
+
+	as.DatabaseQueries.InsertAudio(context.Background(), database.InsertAudioParams{})
 
 	fileId := as.NextId
 	fileParts := strings.Split(fileName, ".")
@@ -66,10 +72,16 @@ func (as *AudioService) FindOne(id int) (*Audio, error) {
 }
 
 func (as *AudioService) SendAudioToStt(id int, language string) (string, error) {
-	_, err := as.FindOne(id)
+	audio, err := as.FindOne(id)
 	if err != nil {
 		return "", fmt.Errorf("Could not send audio to stt: %v", err)
 	}
 
-	return "", nil
+	exchange := as.EnvService.SttRequestExchange
+	routingKey := as.EnvService.SttRequestRoutingKey
+	queue := as.EnvService.SttRequestQueue
+	message := fmt.Sprintf("%d,%s,%s", id, audio.Path, language)
+	as.RabbitMQClient.PublishMessage(exchange, routingKey, queue, []byte(message))
+
+	return "Audio sent to stt, the result will come soon", nil
 }

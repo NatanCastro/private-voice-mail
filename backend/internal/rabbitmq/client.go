@@ -23,7 +23,6 @@ type RabbitClient struct {
 	url     string
 }
 
-// newConnection establishes a new connection and channel with RabbitMQ
 func newConnection(url string) (*amqp.Connection, *amqp.Channel, error) {
 	conn, err := amqp.Dial(url)
 	if err != nil {
@@ -39,7 +38,6 @@ func newConnection(url string) (*amqp.Connection, *amqp.Channel, error) {
 	return conn, channel, nil
 }
 
-// NewRabbitClient creates a new RabbitMQ client with the given connection URL
 func NewRabbitClient(envService *config.EnvService) (*RabbitClient, error) {
 	connectionURL := fmt.Sprintf("amqp://%s:%s@%s", envService.RabbitMQUser, envService.RabbitMQPassword, envService.RabbitMQServer)
 	conn, channel, err := newConnection(connectionURL)
@@ -54,7 +52,6 @@ func NewRabbitClient(envService *config.EnvService) (*RabbitClient, error) {
 	}, nil
 }
 
-// ConsumeMessages consumes messages from a specified exchange using a custom queue name and routing key
 func (client *RabbitClient) ConsumeMessages(exchange, routingKey, queueName string) (<-chan amqp.Delivery, error) {
 	err := client.channel.ExchangeDeclare(
 		exchange, "direct", true, false, false, false, nil)

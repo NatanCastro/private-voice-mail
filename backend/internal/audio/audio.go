@@ -4,14 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/google/uuid"
 )
 
 type Audio struct {
-	Id        int    `json:"id"`
-	Name      string `json:"name"`
-	Extension string `json:"-"`
-	MimeType  string `json:"-"`
-	Path      string `json:"path"`
+	Id        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Extension string    `json:"extention"`
+	MimeType  string    `json:"mime_type"`
+	Path      string    `json:"path"`
 }
 
 func CreateAudioFolder() {
