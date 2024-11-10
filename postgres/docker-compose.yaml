@@ -1,0 +1,27 @@
+services:
+  database:
+    container_name: postgres_database
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: audio_mail
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+  pgadmin:
+    depends_on:
+      - database
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@user.com
+      PGADMIN_DEFAULT_PASSWORD: secret
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+volumes:
+  pgdata:

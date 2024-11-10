@@ -1,5 +1,5 @@
 include:
-  - 
+  - "./postgres/docker-compose.yaml"
 
 services:
   nginx:
@@ -20,3 +20,4 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
+
