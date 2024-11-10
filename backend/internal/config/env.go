@@ -17,6 +17,8 @@ type EnvService struct {
 	SttResponseExchange   string
 	SttResponseRoutingKey string
 	SttResponseQueue      string
+
+	DatabaseUrl string
 }
 
 func getEnvOrDefault(variable, defaultValue string) string {
@@ -41,5 +43,7 @@ func NewEnvService() *EnvService {
 		SttResponseExchange:   getEnvOrDefault("STT_RESPONSE_EXCHANGE", "stt_reponse_exchange"),
 		SttResponseRoutingKey: getEnvOrDefault("STT_RESPONSE_ROUTINGKEY", "response"),
 		SttResponseQueue:      getEnvOrDefault("STT_RESPONSE_QUEUE", "sst_response"),
+
+		DatabaseUrl: getEnvOrDefault("DATABASE_URL", "postgres://user:pass@localhost:5432/audio_mail"),
 	}
 }
