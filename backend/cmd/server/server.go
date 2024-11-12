@@ -11,6 +11,7 @@ import (
 	"github.com/NatanCastro/private-voice-mail/backend/internal/config"
 	"github.com/NatanCastro/private-voice-mail/backend/internal/database"
 	"github.com/NatanCastro/private-voice-mail/backend/internal/files"
+	"github.com/NatanCastro/private-voice-mail/backend/internal/middleware"
 	"github.com/NatanCastro/private-voice-mail/backend/internal/rabbitmq"
 
 	"github.com/jackc/pgx/v5"
@@ -25,6 +26,8 @@ func main() {
 	})()
 
 	mux := http.NewServeMux()
+
+	middlewareStack := middleware.CreateStack(middleware.Logging)
 
 	envService := config.NewEnvService()
 
@@ -61,11 +64,11 @@ func main() {
 	}()
 
 	fileService := files.NewFileService(envService)
-	audioService := audio.NewAudioService(rabbitClient, fileService, envService)
+	audioService := audio.NewAudioService(rabbitClient, fileService, envService, q)
 	audioController := audio.NewAudioController(audioService)
 
 	audio.BindAudioRoutes(audioController, mux)
 
 	fmt.Println("INFO: starting server at http://localhost:8000")
-	http.ListenAndServe("localhost:8000", mux)
+	http.ListenAndServe("localhost:8000", middlewareStack(mux))
 }
