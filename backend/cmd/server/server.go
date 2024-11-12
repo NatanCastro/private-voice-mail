@@ -18,11 +18,11 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func main() {
+func run(ctx context.Context) error {
 	audio.CreateAudioFolder()
-	defer (func() {
+	defer (func() error {
 		err := recover()
-		fmt.Printf("ERROR: %v\n", err)
+		return fmt.Errorf("ERROR: %v\n", err)
 	})()
 
 	mux := http.NewServeMux()
@@ -31,16 +31,16 @@ func main() {
 
 	envService := config.NewEnvService()
 
-	conn, err := pgx.Connect(context.Background(), envService.DatabaseUrl)
+	conn, err := pgx.Connect(ctx, envService.DatabaseUrl)
 	if err != nil {
-		os.Exit(1)
+		return fmt.Errorf("Could not connect to the Database: ", err)
 	}
 	defer conn.Close(context.Background())
 	q := database.New(conn)
 
 	rabbitClient, err := rabbitmq.NewRabbitClient(envService)
 	if err != nil {
-		panic(fmt.Errorf("Could not connnect to rabbitmq, %v", err))
+		return fmt.Errorf("Could not connnect to rabbitmq, %v", err)
 	}
 	defer rabbitClient.Close()
 
@@ -50,8 +50,7 @@ func main() {
 
 	msgs, err := rabbitClient.ConsumeMessages(exchange, routingKey, queue)
 	if err != nil {
-		slog.Error("Failed to consume messages", slog.String("error", err.Error()))
-		return
+		return fmt.Errorf("Failed to consume messages", slog.String("error", err.Error()))
 	}
 
 	go func() {
@@ -71,4 +70,12 @@ func main() {
 
 	fmt.Println("INFO: starting server at http://localhost:8000")
 	http.ListenAndServe("localhost:8000", middlewareStack(mux))
+	return nil
+}
+
+func main() {
+	ctx := context.Background()
+	if err := run(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+	}
 }
